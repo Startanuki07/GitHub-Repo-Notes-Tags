@@ -1,11 +1,25 @@
 # ✨ Add Personal Notes, Categories, and Ratings to GitHub Repos
 
+
 **This script adds a personal note, category tag, custom icon, and star rating to any repo on your GitHub lists.**
 
 ---
 
 > 💡 **Overview**
 > On GitHub's Starred repos, Your repositories, and Organization repositories pages, every listed repo gets a small badge showing a color-coded category tag and a personal note, both editable right where they appear. A settings panel lets you build your own categories and groups, swap the small icon shown in front of each repo's title for one from a large icon set, and turn on an optional 1–5 star rating. Everything you create — notes, categories, and settings — can be backed up to a file, restored later, or reset back to a clean slate at any time.
+
+
+<details open>
+  <summary><small style="color: #666;">Hide video</small></summary>
+
+  <video
+    src="https://files.catbox.moe/h2pzld.mp4"
+    controls
+    width="600">
+  </video>
+
+</details>
+
 
 ---
 
