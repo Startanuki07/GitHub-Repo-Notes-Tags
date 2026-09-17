@@ -4,7 +4,7 @@
 // @homepageURL  https://github.com/Startanuki07
 // @license      MIT
 // @author       Star_tanuki07
-// @version      1.0.0.0
+// @version      1.1.0.0
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=github.com
 // @description  Add personal notes, tags, and ratings to repos on your GitHub lists.
 // @match        https://github.com/*
@@ -1090,6 +1090,50 @@
             
             height: auto;
         }
+
+        .gh-remark-profile-name-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .gh-remark-profile-name-wrap .gh-remark-profile-name-edit {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+            flex: none;
+            transition: opacity 0.15s ease;
+        }
+        .gh-remark-profile-name-wrap:hover .gh-remark-profile-name-edit {
+            opacity: 0.5;
+            width: auto;
+            overflow: visible;
+        }
+        .gh-remark-profile-name-edit svg {
+            fill: var(--fgColor-muted, #9198a1);
+            cursor: pointer;
+            vertical-align: middle;
+        }
+        .gh-remark-profile-name-edit:hover svg {
+            fill: var(--fgColor-default, #f0f6fc);
+        }
+        
+        .gh-remark-profile-name-input {
+            font: inherit;
+            color: inherit;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid color-mix(in srgb, currentColor 60%, transparent);
+            padding: 0;
+            margin: 0;
+            outline: none;
+            width: 100%;
+            min-width: 0;
+        }
+        .gh-remark-profile-name-input:focus {
+            border-bottom-color: currentColor;
+        }
     `;
     const styleTag = document.createElement('style');
     styleTag.textContent = REMARK_STYLES;
@@ -1564,6 +1608,21 @@
     let _displaySettingsCache = null;
 
     const LAST_EXPORT_STORAGE_KEY = 'GRNT-lastExportAt';
+
+    const USER_DISPLAY_NAME_STORAGE_KEY = 'GRNT-userDisplayNames';
+    const UserDisplayNameStorage = {
+        get: (username) => GM_getValue(USER_DISPLAY_NAME_STORAGE_KEY, {})[username] || '',
+        set: (username, name) => {
+            const all = GM_getValue(USER_DISPLAY_NAME_STORAGE_KEY, {});
+            const trimmed = name.trim();
+            if (trimmed) {
+                all[username] = trimmed;
+            } else {
+                delete all[username];
+            }
+            GM_setValue(USER_DISPLAY_NAME_STORAGE_KEY, all);
+        }
+    };
 
     const DisplaySettingsStorage = {
         _ensureCache: () => {
@@ -2911,6 +2970,85 @@
         setTimeout(() => document.addEventListener('click', onOutsideClick, true), 0);
     }
 
+    function isUserProfilePage() {
+        return !!document.querySelector('.vcard-names .p-nickname');
+    }
+
+    function injectUserProfileNameEdit() {
+        if (!isUserProfilePage()) return;
+        const heading = document.querySelector('h1.vcard-names');
+        const nameEl = heading && heading.querySelector('.p-name');
+        const nicknameEl = heading && heading.querySelector('.p-nickname');
+        if (!nameEl || !nicknameEl || heading.dataset.remarkNameEditDone) return;
+        heading.dataset.remarkNameEditDone = '1';
+
+        const username = nicknameEl.textContent.trim();
+        const githubName = nameEl.textContent.trim();
+        const nameStyle = getComputedStyle(nameEl);
+        const nameElFont = {
+            fontSize: nameStyle.fontSize,
+            fontWeight: nameStyle.fontWeight,
+            lineHeight: nameStyle.lineHeight,
+            color: nameStyle.color
+        };
+
+        const wrap = document.createElement('span');
+        wrap.className = 'gh-remark-profile-name-wrap';
+        nameEl.replaceWith(wrap);
+
+        const renderView = () => {
+            wrap.innerHTML = '';
+            const custom = UserDisplayNameStorage.get(username);
+            nameEl.textContent = custom || githubName;
+            wrap.appendChild(nameEl);
+
+            const editBtn = document.createElement('span');
+            editBtn.className = 'gh-remark-profile-name-edit';
+            editBtn.title = 'Edit display name';
+            editBtn.innerHTML = EDIT_ICON_SVG;
+            editBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                renderEdit();
+            };
+            wrap.appendChild(editBtn);
+        };
+
+        const renderEdit = () => {
+            wrap.innerHTML = '';
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'gh-remark-profile-name-input';
+            Object.assign(input.style, nameElFont);
+            input.value = UserDisplayNameStorage.get(username) || githubName;
+            wrap.appendChild(input);
+            input.focus();
+            input.select();
+
+            let settled = false;
+            const commit = () => {
+                if (settled) return;
+                settled = true;
+                const trimmedInput = input.value.trim();
+                UserDisplayNameStorage.set(username, trimmedInput === githubName ? '' : trimmedInput);
+                renderView();
+            };
+            const cancel = () => {
+                if (settled) return;
+                settled = true;
+                renderView();
+            };
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); commit(); }
+                if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); cancel(); }
+            });
+            input.addEventListener('blur', commit);
+            input.addEventListener('click', (e) => e.stopPropagation());
+        };
+
+        renderView();
+    }
+
     const PAGE_CONTAINER_RULES = [
         {
             kind: 'starred',
@@ -3265,6 +3403,7 @@
     setPanelScaleLevel(getPanelScaleLevel());
 
     injectReleaseIcons();
+    injectUserProfileNameEdit();
 
     let scanScheduled = false;
     function scheduleScan() {
@@ -3273,6 +3412,7 @@
         queueMicrotask(() => {
             scanScheduled = false;
             injectReleaseIcons();
+            injectUserProfileNameEdit();
         });
     }
 
