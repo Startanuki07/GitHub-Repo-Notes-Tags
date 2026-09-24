@@ -4,7 +4,7 @@
 // @homepageURL  https://github.com/Startanuki07
 // @license      MIT
 // @author       Star_tanuki07
-// @version      1.1.0.0
+// @version      1.1.1.0
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=github.com
 // @description  Add personal notes, tags, and ratings to repos on your GitHub lists.
 // @match        https://github.com/*
@@ -101,6 +101,57 @@
             opacity: 0.5;
             width: auto;
             overflow: visible;
+        }
+        
+        .gh-remark-release-icon {
+            transition: opacity .2s ease;
+        }
+        .gh-remark-heading:hover .gh-remark-release-icon {
+            opacity: 1;
+        }
+        .gh-remark-release-icon.gh-remark-icon-hop {
+            animation: gh-remark-icon-hop .45s cubic-bezier(.34,1.56,.64,1);
+        }
+        @keyframes gh-remark-icon-hop {
+            0%   { transform: scale(1) rotate(0deg); }
+            35%  { transform: scale(1.22) rotate(-12deg); }
+            60%  { transform: scale(1.08) rotate(8deg); }
+            80%  { transform: scale(1.1) rotate(-4deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+        
+        .gh-remark-release-icon.gh-remark-icon-breathe {
+            animation: gh-remark-icon-breathe 1.8s ease-in-out 2;
+        }
+        @keyframes gh-remark-icon-breathe {
+            0%, 100% { transform: scale(1); opacity: .55; }
+            50%      { transform: scale(1.08); opacity: 1; }
+        }
+        
+        .gh-remark-release-icon.gh-remark-icon-bounce {
+            animation: gh-remark-icon-bounce .55s cubic-bezier(.28,.84,.42,1);
+        }
+        @keyframes gh-remark-icon-bounce {
+            0%   { transform: translateY(0) scale(1); }
+            30%  { transform: translateY(-9px) scale(1.05,.95); }
+            50%  { transform: translateY(0) scale(.94,1.08); }
+            68%  { transform: translateY(-4px) scale(1.02,.98); }
+            84%  { transform: translateY(0) scale(.98,1.02); }
+            100% { transform: translateY(0) scale(1); }
+        }
+        
+        .gh-remark-release-icon.gh-remark-icon-spinpop {
+            animation: gh-remark-icon-spinpop .5s cubic-bezier(.34,1.56,.64,1);
+        }
+        @keyframes gh-remark-icon-spinpop {
+            0%   { transform: rotate(0deg) scale(1); }
+            55%  { transform: rotate(340deg) scale(1.2); }
+            75%  { transform: rotate(360deg) scale(.92); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        .gh-remark-release-icon:active {
+            transition-duration: .08s;
+            transform: scale(.92);
         }
         .gh-remark-badge-input {
             background-color: var(--bgColor-default, #0d1117);
@@ -3078,15 +3129,23 @@
         return container ? { container, kind: rule.kind } : null;
     }
 
+    const RELEASE_ICON_HOVER_ANIMATIONS = [
+        'gh-remark-icon-hop',
+        'gh-remark-icon-breathe',
+        'gh-remark-icon-bounce',
+        'gh-remark-icon-spinpop'
+    ];
+
     function buildReleaseIcon(href, iconKey) {
         const icon = document.createElement('a');
         icon.href = href.replace(/\/+$/, '') + '/releases';
         icon.title = 'View releases';
         icon.setAttribute('aria-label', 'View releases for ' + href.slice(1));
+        icon.className = 'gh-remark-release-icon';
         icon.style.cssText =
             'display:inline-flex;align-items:center;justify-content:center;' +
             'width:26px;height:26px;margin-right:8px;vertical-align:middle;' +
-            'line-height:0;opacity:.5;transition:opacity .15s ease;' +
+            'line-height:0;opacity:.5;' +
             'border-radius:50%;' +
             'background:radial-gradient(circle,' +
             'color-mix(in srgb,currentColor calc(35% + var(--gh-remark-icon-glow,4px) * 3%),transparent) 0%,' +
@@ -3101,8 +3160,14 @@
             icon.style.color = ic.color || 'var(--fgColor-muted,#6e7681)';
         };
         icon.setIcon(iconKey);
-        icon.addEventListener('mouseenter', () => { icon.style.opacity = '1'; });
-        icon.addEventListener('mouseleave', () => { icon.style.opacity = '.5'; });
+        icon.addEventListener('mouseenter', () => {
+            const pick = RELEASE_ICON_HOVER_ANIMATIONS[
+                Math.floor(Math.random() * RELEASE_ICON_HOVER_ANIMATIONS.length)
+            ];
+            icon.classList.remove(...RELEASE_ICON_HOVER_ANIMATIONS);
+            void icon.offsetWidth;
+            icon.classList.add(pick);
+        });
         return icon;
     }
 
