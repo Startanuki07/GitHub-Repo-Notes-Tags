@@ -4,9 +4,17 @@
 // @homepageURL  https://github.com/Startanuki07
 // @license      MIT
 // @author       Star_tanuki07
-// @version      1.1.1.0
+// @version      1.2.0.0
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=github.com
 // @description  Add personal notes, tags, and ratings to repos on your GitHub lists.
+// @description:zh-TW 為 GitHub 清單中的 repo 加上個人備註、分類標籤與星等評分。
+// @description:zh-CN 为 GitHub 列表中的 repo 添加个人备注、分类标签与星级评分。
+// @description:ja    GitHub のリスト内のリポジトリに、個人メモ・タグ・評価を追加します。
+// @description:ko    GitHub 목록의 저장소에 개인 메모, 태그, 별점을 추가합니다.
+// @name:zh-TW   GitHub Repo 備註與標籤
+// @name:zh-CN   GitHub Repo 备注与标签
+// @name:ja      GitHub リポジトリのメモとタグ
+// @name:ko      GitHub 저장소 메모 및 태그
 // @match        https://github.com/*
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -16,6 +24,525 @@
 
 (function () {
     'use strict';
+
+    const I18N_STRINGS = {
+        en: {
+            'modal.cancel': 'Cancel',
+            'modal.reset': 'Reset',
+            'modal.confirm': 'Confirm',
+            'modal.delete': 'Delete',
+            'saved.reloadHint': 'Saved — reload the page to apply to the current list',
+            'saved.reload': 'Reload',
+            'category.none': 'Category',
+            'category.edit': 'Edit category',
+            'category.delete': 'Delete category',
+            'category.add': 'Add category',
+            'category.new': 'New category',
+            'category.namePlaceholder': 'e.g. "WIP", "Archived"...',
+            'category.color': 'Category color',
+            'category.saveChanges': 'Save changes',
+            'category.pickOrManage': 'Pick a category, or manage groups below',
+            'category.shiftDeleteTip': 'Tip: Shift+Click ✕ to delete without confirming',
+            'category.noCategory': 'No category',
+            'group.namePlaceholder': 'New group name...',
+            'group.add': 'Add group',
+            'group.new': 'New group',
+            'group.deleteTip': 'Delete group (Shift+Click to skip confirmation)',
+            'group.deleteConfirmTitle': 'Delete group "{label}"?',
+            'group.deleteConfirmBodyWithCats': 'This group has {n} categor{y}. Deleting it removes {those} too, and any repo already tagged with {one} will keep showing the old label as plain text (the pill just won\u2019t resolve a color/name anymore) instead of resetting to None. This can\u2019t be undone.',
+            'group.deleteConfirmBodyEmpty': 'This group has no categories in it yet. This can\u2019t be undone.',
+            'panel.tab.standard': 'Standard',
+            'panel.tab.other': 'Other',
+            'panel.displaySettings': 'Display Settings',
+            'panel.resetToDefault': 'Reset to default',
+            'panel.noteSize': 'Note size',
+            'panel.editIconAlwaysVisible': 'Edit icon always visible',
+            'panel.remarkBeforeVisibility': 'Remark before Public/Private label',
+            'panel.enableRatingStars': 'Enable rating stars',
+            'panel.reloadAfterChange': 'Reload the page after changing this.',
+            'panel.reloadAfterChanges': 'Reload the page after changing these.',
+            'panel.pageSupport': 'Page Support',
+            'panel.pageStarred': 'Starred repos',
+            'panel.pageRepositories': 'Your repositories',
+            'panel.pageOrgRepos': 'Organization repositories',
+            'panel.pillStyle': 'Pill Style',
+            'panel.pillGlow': 'Pill glow',
+            'panel.pillCorners': 'Pill corners',
+            'panel.pillSpacing': 'Pill spacing',
+            'panel.pillSize': 'Pill size',
+            'panel.releaseIconGlow': 'Release icon glow',
+            'panel.enableReleaseIconGlow': 'Enable release icon glow',
+            'panel.releaseIconPickerHint': 'Release icon picker \u2192 left panel.',
+            'panel.releaseIconThisRepo': 'Release Icon (this repo)',
+            'panel.lockedIconAllRepos': 'Locked icon (shown for every repo)',
+            'panel.lockTitleLocked': 'Locked \u2014 every repo shows the locked icon. Click to unlock.',
+            'panel.lockTitleUnlocked': 'Lock the release icon for every repo',
+            'panel.locked': 'Locked',
+            'panel.unlocked': 'Unlocked',
+            'panel.viewReleases': 'View releases',
+            'stats.title': 'Stats',
+            'stats.noneYet': 'No repos noted yet.',
+            'stats.notedCount': '{n} repo{s} noted',
+            'backup.title': 'Backup',
+            'backup.export': 'Export',
+            'backup.import': 'Import',
+            'backup.neverExported': 'Never exported \u2014 consider backing up your notes.',
+            'backup.lastExported': 'Last exported: {date}',
+            'backup.notValidJson': 'Not valid JSON.',
+            'backup.notValidBackup': 'Not a valid backup file.',
+            'backup.missingData': 'Missing expected data \u2014 this doesn\u2019t look like a backup from this script.',
+            'backup.replaceConfirmTitle': 'Replace all current data?',
+            'backup.replaceConfirmBody': 'This will replace everything currently saved ({n} repo note{s}, custom categories, display settings, and panel scale) with the contents of this file, then reload the page. This can\u2019t be undone unless you have another backup.',
+            'reset.title': 'Reset',
+            'reset.everything': 'Reset everything to defaults',
+            'reset.confirmTitle': 'Reset everything to defaults?',
+            'reset.confirmBody': 'This clears every repo note, every custom category, and all display settings (including the release-icon lock) back to how this script looked on first install, then reloads the page. Export a backup first if you\u2019re not sure \u2014 this can\u2019t be undone.',
+            'remark.editName': 'Edit display name',
+            'remark.editNote': 'Edit note',
+            'remark.notePlaceholder': 'Note...',
+            'remark.noteTextColor': 'Note text color',
+            'remark.manageTemplates': 'Manage category templates',
+            'remark.rateStars': 'Rate {n} star{s}',
+            'language.title': 'Language',
+            'language.current': 'Current language',
+            'language.export': 'Export Template',
+            'language.import': 'Import Translation',
+            'language.exportHint': 'Export a template to translate, or import one you\u2019ve already translated.',
+            'language.notValidJson': 'Not valid JSON.',
+            'language.notValidFile': 'Not a valid language file.',
+            'language.missingNameOrCode': 'Missing "langName" or "langCode" \u2014 fill those in before importing.',
+            'language.importSuccess': 'Imported "{name}" \u2014 select it above to switch.',
+            'language.importError': 'Could not import \u2014 {error}',
+            'language.deleteCustom': 'Delete this custom language',
+            'language.deleteConfirmTitle': 'Delete language "{name}"?',
+            'language.deleteConfirmBody': 'This removes the imported translation. Switches back to English. This can\u2019t be undone (unless you re-import the file).',
+        },
+        'zh-TW': {
+            'modal.cancel': '取消',
+            'modal.reset': '重設',
+            'modal.confirm': '確認',
+            'modal.delete': '刪除',
+            'saved.reloadHint': '已儲存 — 重新整理頁面以套用到目前清單',
+            'saved.reload': '重新整理',
+            'category.none': '分類',
+            'category.edit': '編輯分類',
+            'category.delete': '刪除分類',
+            'category.add': '新增分類',
+            'category.new': '新分類',
+            'category.namePlaceholder': '例如「WIP」、「封存」...',
+            'category.color': '分類顏色',
+            'category.saveChanges': '儲存變更',
+            'category.pickOrManage': '選擇分類，或在下方管理群組',
+            'category.shiftDeleteTip': '提示：Shift+點擊 ✕ 可跳過確認直接刪除',
+            'category.noCategory': '無分類',
+            'group.namePlaceholder': '新群組名稱...',
+            'group.add': '新增群組',
+            'group.new': '新群組',
+            'group.deleteTip': '刪除群組（Shift+點擊可跳過確認）',
+            'group.deleteConfirmTitle': '刪除群組「{label}」？',
+            'group.deleteConfirmBodyWithCats': '此群組內有 {n} 個分類。刪除後會一併移除{those}，任何已標記{one}的 repo 將只顯示純文字舊標籤（無法再對應顏色／名稱），而不會重設為「無」。此動作無法復原。',
+            'group.deleteConfirmBodyEmpty': '此群組內尚無任何分類。此動作無法復原。',
+            'panel.tab.standard': '標準',
+            'panel.tab.other': '其他',
+            'panel.displaySettings': '顯示設定',
+            'panel.resetToDefault': '重設為預設值',
+            'panel.noteSize': '備註文字大小',
+            'panel.editIconAlwaysVisible': '編輯圖示常駐顯示',
+            'panel.remarkBeforeVisibility': '備註顯示於 Public/Private 標籤之前',
+            'panel.enableRatingStars': '啟用星等評分',
+            'panel.reloadAfterChange': '變更此項後請重新整理頁面。',
+            'panel.reloadAfterChanges': '變更這些項目後請重新整理頁面。',
+            'panel.pageSupport': '頁面支援',
+            'panel.pageStarred': 'Starred 清單',
+            'panel.pageRepositories': '我的 Repositories',
+            'panel.pageOrgRepos': '組織 Repositories',
+            'panel.pillStyle': '標籤樣式',
+            'panel.pillGlow': '標籤光暈',
+            'panel.pillCorners': '標籤圓角',
+            'panel.pillSpacing': '標籤間距',
+            'panel.pillSize': '標籤大小',
+            'panel.releaseIconGlow': 'Release 圖示光暈',
+            'panel.enableReleaseIconGlow': '啟用 Release 圖示光暈',
+            'panel.releaseIconPickerHint': 'Release 圖示選擇器 → 左側面板。',
+            'panel.releaseIconThisRepo': 'Release 圖示（此 repo）',
+            'panel.lockedIconAllRepos': '鎖定圖示（套用至所有 repo）',
+            'panel.lockTitleLocked': '已鎖定 — 所有 repo 皆顯示鎖定圖示。點擊以解鎖。',
+            'panel.lockTitleUnlocked': '將 Release 圖示鎖定套用至所有 repo',
+            'panel.locked': '已鎖定',
+            'panel.unlocked': '未鎖定',
+            'panel.viewReleases': '查看 Releases',
+            'stats.title': '統計',
+            'stats.noneYet': '尚無任何 repo 備註。',
+            'stats.notedCount': '已備註 {n} 個 repo',
+            'backup.title': '備份',
+            'backup.export': '匯出',
+            'backup.import': '匯入',
+            'backup.neverExported': '尚未匯出過 — 建議備份您的備註資料。',
+            'backup.lastExported': '上次匯出：{date}',
+            'backup.notValidJson': '不是有效的 JSON 格式。',
+            'backup.notValidBackup': '不是有效的備份檔案。',
+            'backup.missingData': '缺少必要資料 — 這看起來不是本腳本產生的備份檔。',
+            'backup.replaceConfirmTitle': '取代目前所有資料？',
+            'backup.replaceConfirmBody': '這會將目前已儲存的所有內容（{n} 筆 repo 備註、自訂分類、顯示設定與面板縮放比例）取代為此檔案的內容，並重新整理頁面。除非您另有備份，否則此動作無法復原。',
+            'reset.title': '重設',
+            'reset.everything': '將所有設定重設為預設值',
+            'reset.confirmTitle': '將所有設定重設為預設值？',
+            'reset.confirmBody': '這會清除所有 repo 備註、所有自訂分類，以及全部顯示設定（含 Release 圖示鎖定），恢復成腳本初次安裝時的狀態，並重新整理頁面。若不確定，請先匯出備份 — 此動作無法復原。',
+            'remark.editName': '編輯顯示名稱',
+            'remark.editNote': '編輯備註',
+            'remark.notePlaceholder': '備註...',
+            'remark.noteTextColor': '備註文字顏色',
+            'remark.manageTemplates': '管理分類範本',
+            'remark.rateStars': '評為 {n} 顆星',
+            'language.title': '語言',
+            'language.current': '目前語言',
+            'language.export': '匯出範本',
+            'language.import': '匯入翻譯',
+            'language.exportHint': '匯出範本自行翻譯，或匯入已翻譯好的檔案。',
+            'language.notValidJson': '不是有效的 JSON 格式。',
+            'language.notValidFile': '不是有效的語言檔案。',
+            'language.missingNameOrCode': '缺少「langName」或「langCode」— 請先填寫後再匯入。',
+            'language.importSuccess': '已匯入「{name}」— 於上方選擇即可切換。',
+            'language.importError': '匯入失敗 — {error}',
+            'language.deleteCustom': '刪除此自訂語言',
+            'language.deleteConfirmTitle': '刪除語言「{name}」？',
+            'language.deleteConfirmBody': '這會移除已匯入的翻譯，並切換回英文。此動作無法復原（除非重新匯入檔案）。',
+        },
+        'zh-CN': {
+            'modal.cancel': '取消',
+            'modal.reset': '重置',
+            'modal.confirm': '确认',
+            'modal.delete': '删除',
+            'saved.reloadHint': '已保存 — 刷新页面以应用到当前列表',
+            'saved.reload': '刷新',
+            'category.none': '分类',
+            'category.edit': '编辑分类',
+            'category.delete': '删除分类',
+            'category.add': '添加分类',
+            'category.new': '新分类',
+            'category.namePlaceholder': '例如"WIP"、"已归档"...',
+            'category.color': '分类颜色',
+            'category.saveChanges': '保存更改',
+            'category.pickOrManage': '选择分类，或在下方管理分组',
+            'category.shiftDeleteTip': '提示：Shift+点击 ✕ 可跳过确认直接删除',
+            'category.noCategory': '无分类',
+            'group.namePlaceholder': '新分组名称...',
+            'group.add': '添加分组',
+            'group.new': '新分组',
+            'group.deleteTip': '删除分组（Shift+点击可跳过确认）',
+            'group.deleteConfirmTitle': '删除分组"{label}"？',
+            'group.deleteConfirmBodyWithCats': '此分组内有 {n} 个分类。删除后会一并移除{those}，任何已标记{one}的仓库将只显示纯文本旧标签（无法再对应颜色/名称），而不会重置为"无"。此操作无法撤销。',
+            'group.deleteConfirmBodyEmpty': '此分组内尚无任何分类。此操作无法撤销。',
+            'panel.tab.standard': '标准',
+            'panel.tab.other': '其他',
+            'panel.displaySettings': '显示设置',
+            'panel.resetToDefault': '重置为默认值',
+            'panel.noteSize': '备注文字大小',
+            'panel.editIconAlwaysVisible': '编辑图标常驻显示',
+            'panel.remarkBeforeVisibility': '备注显示于 Public/Private 标签之前',
+            'panel.enableRatingStars': '启用星级评分',
+            'panel.reloadAfterChange': '更改此项后请刷新页面。',
+            'panel.reloadAfterChanges': '更改这些项目后请刷新页面。',
+            'panel.pageSupport': '页面支持',
+            'panel.pageStarred': 'Starred 列表',
+            'panel.pageRepositories': '我的 Repositories',
+            'panel.pageOrgRepos': '组织 Repositories',
+            'panel.pillStyle': '标签样式',
+            'panel.pillGlow': '标签光晕',
+            'panel.pillCorners': '标签圆角',
+            'panel.pillSpacing': '标签间距',
+            'panel.pillSize': '标签大小',
+            'panel.releaseIconGlow': 'Release 图标光晕',
+            'panel.enableReleaseIconGlow': '启用 Release 图标光晕',
+            'panel.releaseIconPickerHint': 'Release 图标选择器 → 左侧面板。',
+            'panel.releaseIconThisRepo': 'Release 图标（此仓库）',
+            'panel.lockedIconAllRepos': '锁定图标（应用于所有仓库）',
+            'panel.lockTitleLocked': '已锁定 — 所有仓库均显示锁定图标。点击以解锁。',
+            'panel.lockTitleUnlocked': '将 Release 图标锁定应用于所有仓库',
+            'panel.locked': '已锁定',
+            'panel.unlocked': '未锁定',
+            'panel.viewReleases': '查看 Releases',
+            'stats.title': '统计',
+            'stats.noneYet': '尚无任何仓库备注。',
+            'stats.notedCount': '已备注 {n} 个仓库',
+            'backup.title': '备份',
+            'backup.export': '导出',
+            'backup.import': '导入',
+            'backup.neverExported': '尚未导出过 — 建议备份您的备注数据。',
+            'backup.lastExported': '上次导出：{date}',
+            'backup.notValidJson': '不是有效的 JSON 格式。',
+            'backup.notValidBackup': '不是有效的备份文件。',
+            'backup.missingData': '缺少必要数据 — 这看起来不是本脚本生成的备份文件。',
+            'backup.replaceConfirmTitle': '替换当前所有数据？',
+            'backup.replaceConfirmBody': '这会将当前已保存的所有内容（{n} 条仓库备注、自定义分类、显示设置与面板缩放比例）替换为此文件的内容，并刷新页面。除非您另有备份，否则此操作无法撤销。',
+            'reset.title': '重置',
+            'reset.everything': '将所有设置重置为默认值',
+            'reset.confirmTitle': '将所有设置重置为默认值？',
+            'reset.confirmBody': '这会清除所有仓库备注、所有自定义分类，以及全部显示设置（含 Release 图标锁定），恢复为脚本初次安装时的状态，并刷新页面。若不确定，请先导出备份 — 此操作无法撤销。',
+            'remark.editName': '编辑显示名称',
+            'remark.editNote': '编辑备注',
+            'remark.notePlaceholder': '备注...',
+            'remark.noteTextColor': '备注文字颜色',
+            'remark.manageTemplates': '管理分类模板',
+            'remark.rateStars': '评为 {n} 星',
+            'language.title': '语言',
+            'language.current': '当前语言',
+            'language.export': '导出模板',
+            'language.import': '导入翻译',
+            'language.exportHint': '导出模板自行翻译，或导入已翻译好的文件。',
+            'language.notValidJson': '不是有效的 JSON 格式。',
+            'language.notValidFile': '不是有效的语言文件。',
+            'language.missingNameOrCode': '缺少"langName"或"langCode" — 请先填写后再导入。',
+            'language.importSuccess': '已导入"{name}" — 在上方选择即可切换。',
+            'language.importError': '导入失败 — {error}',
+            'language.deleteCustom': '删除此自定义语言',
+            'language.deleteConfirmTitle': '删除语言"{name}"？',
+            'language.deleteConfirmBody': '这会移除已导入的翻译，并切换回英文。此操作无法撤销（除非重新导入文件）。',
+        },
+        ja: {
+            'modal.cancel': 'キャンセル',
+            'modal.reset': 'リセット',
+            'modal.confirm': '確認',
+            'modal.delete': '削除',
+            'saved.reloadHint': '保存しました — ページを再読み込みすると現在のリストに反映されます',
+            'saved.reload': '再読み込み',
+            'category.none': 'カテゴリ',
+            'category.edit': 'カテゴリを編集',
+            'category.delete': 'カテゴリを削除',
+            'category.add': 'カテゴリを追加',
+            'category.new': '新しいカテゴリ',
+            'category.namePlaceholder': '例：「WIP」「アーカイブ」など',
+            'category.color': 'カテゴリの色',
+            'category.saveChanges': '変更を保存',
+            'category.pickOrManage': 'カテゴリを選択するか、下でグループを管理してください',
+            'category.shiftDeleteTip': 'ヒント：Shift+クリックで ✕ すると確認なしで削除できます',
+            'category.noCategory': 'カテゴリなし',
+            'group.namePlaceholder': '新しいグループ名...',
+            'group.add': 'グループを追加',
+            'group.new': '新しいグループ',
+            'group.deleteTip': 'グループを削除（Shift+クリックで確認をスキップ）',
+            'group.deleteConfirmTitle': 'グループ「{label}」を削除しますか？',
+            'group.deleteConfirmBodyWithCats': 'このグループには {n} 件のカテゴリがあります。削除すると{those}も削除され、{one}が設定されていたリポジトリはピルが色/名前を解決できなくなり、プレーンテキストの古いラベルとして表示されます（「なし」にはリセットされません）。この操作は元に戻せません。',
+            'group.deleteConfirmBodyEmpty': 'このグループにはまだカテゴリがありません。この操作は元に戻せません。',
+            'panel.tab.standard': '標準',
+            'panel.tab.other': 'その他',
+            'panel.displaySettings': '表示設定',
+            'panel.resetToDefault': 'デフォルトに戻す',
+            'panel.noteSize': 'メモの文字サイズ',
+            'panel.editIconAlwaysVisible': '編集アイコンを常時表示',
+            'panel.remarkBeforeVisibility': 'メモを Public/Private ラベルの前に表示',
+            'panel.enableRatingStars': '星評価を有効にする',
+            'panel.reloadAfterChange': 'この設定を変更した後はページを再読み込みしてください。',
+            'panel.reloadAfterChanges': 'これらの設定を変更した後はページを再読み込みしてください。',
+            'panel.pageSupport': '対応ページ',
+            'panel.pageStarred': 'スター付きリポジトリ',
+            'panel.pageRepositories': '自分のリポジトリ',
+            'panel.pageOrgRepos': '組織のリポジトリ',
+            'panel.pillStyle': 'ピルのスタイル',
+            'panel.pillGlow': 'ピルの発光',
+            'panel.pillCorners': 'ピルの角丸',
+            'panel.pillSpacing': 'ピルの間隔',
+            'panel.pillSize': 'ピルのサイズ',
+            'panel.releaseIconGlow': 'リリースアイコンの発光',
+            'panel.enableReleaseIconGlow': 'リリースアイコンの発光を有効にする',
+            'panel.releaseIconPickerHint': 'リリースアイコン選択 → 左側パネル。',
+            'panel.releaseIconThisRepo': 'リリースアイコン（このリポジトリ）',
+            'panel.lockedIconAllRepos': '固定アイコン（全リポジトリに表示）',
+            'panel.lockTitleLocked': '固定中 — すべてのリポジトリで固定アイコンを表示しています。クリックで解除。',
+            'panel.lockTitleUnlocked': 'リリースアイコンを全リポジトリに固定する',
+            'panel.locked': '固定中',
+            'panel.unlocked': '未固定',
+            'panel.viewReleases': 'リリースを表示',
+            'stats.title': '統計',
+            'stats.noneYet': 'まだメモされたリポジトリはありません。',
+            'stats.notedCount': '{n} 件のリポジトリにメモ済み',
+            'backup.title': 'バックアップ',
+            'backup.export': 'エクスポート',
+            'backup.import': 'インポート',
+            'backup.neverExported': 'まだエクスポートしていません — メモのバックアップをおすすめします。',
+            'backup.lastExported': '前回のエクスポート：{date}',
+            'backup.notValidJson': '有効な JSON ではありません。',
+            'backup.notValidBackup': '有効なバックアップファイルではありません。',
+            'backup.missingData': '必要なデータが不足しています — このスクリプトのバックアップではないようです。',
+            'backup.replaceConfirmTitle': '現在のすべてのデータを置き換えますか？',
+            'backup.replaceConfirmBody': '現在保存されているすべての内容（{n} 件のリポジトリメモ、カスタムカテゴリ、表示設定、パネルの拡大率）をこのファイルの内容に置き換え、ページを再読み込みします。別のバックアップがない限り、この操作は元に戻せません。',
+            'reset.title': 'リセット',
+            'reset.everything': 'すべてをデフォルトにリセット',
+            'reset.confirmTitle': 'すべてをデフォルトにリセットしますか？',
+            'reset.confirmBody': 'すべてのリポジトリメモ、すべてのカスタムカテゴリ、および表示設定（リリースアイコンの固定を含む）が、スクリプトを最初にインストールしたときの状態に戻り、ページが再読み込みされます。不安な場合は先にバックアップをエクスポートしてください — この操作は元に戻せません。',
+            'remark.editName': '表示名を編集',
+            'remark.editNote': 'メモを編集',
+            'remark.notePlaceholder': 'メモ...',
+            'remark.noteTextColor': 'メモの文字色',
+            'remark.manageTemplates': 'カテゴリテンプレートを管理',
+            'remark.rateStars': '{n} つ星で評価',
+            'language.title': '言語',
+            'language.current': '現在の言語',
+            'language.export': 'テンプレートをエクスポート',
+            'language.import': '翻訳をインポート',
+            'language.exportHint': 'テンプレートをエクスポートして翻訳するか、翻訳済みのファイルをインポートしてください。',
+            'language.notValidJson': '有効な JSON ではありません。',
+            'language.notValidFile': '有効な言語ファイルではありません。',
+            'language.missingNameOrCode': '「langName」または「langCode」が未入力です — インポート前に入力してください。',
+            'language.importSuccess': '「{name}」をインポートしました — 上で選択すると切り替わります。',
+            'language.importError': 'インポートできませんでした — {error}',
+            'language.deleteCustom': 'このカスタム言語を削除',
+            'language.deleteConfirmTitle': '言語「{name}」を削除しますか？',
+            'language.deleteConfirmBody': 'インポートした翻訳が削除され、英語に戻ります。この操作は元に戻せません（ファイルを再インポートすれば可能です）。',
+        },
+        ko: {
+            'modal.cancel': '취소',
+            'modal.reset': '초기화',
+            'modal.confirm': '확인',
+            'modal.delete': '삭제',
+            'saved.reloadHint': '저장됨 — 페이지를 새로고침하면 현재 목록에 적용됩니다',
+            'saved.reload': '새로고침',
+            'category.none': '카테고리',
+            'category.edit': '카테고리 편집',
+            'category.delete': '카테고리 삭제',
+            'category.add': '카테고리 추가',
+            'category.new': '새 카테고리',
+            'category.namePlaceholder': '예: "WIP", "보관됨"...',
+            'category.color': '카테고리 색상',
+            'category.saveChanges': '변경 사항 저장',
+            'category.pickOrManage': '카테고리를 선택하거나 아래에서 그룹을 관리하세요',
+            'category.shiftDeleteTip': '팁: Shift+클릭으로 ✕ 하면 확인 없이 삭제됩니다',
+            'category.noCategory': '카테고리 없음',
+            'group.namePlaceholder': '새 그룹 이름...',
+            'group.add': '그룹 추가',
+            'group.new': '새 그룹',
+            'group.deleteTip': '그룹 삭제 (Shift+클릭으로 확인 건너뛰기)',
+            'group.deleteConfirmTitle': '그룹 "{label}"을(를) 삭제하시겠습니까?',
+            'group.deleteConfirmBodyWithCats': '이 그룹에는 {n}개의 카테고리가 있습니다. 삭제하면 {those}도 함께 제거되며, {one}로 태그된 저장소는 색상/이름을 더 이상 표시하지 못하고 일반 텍스트 라벨로만 표시됩니다(없음으로 재설정되지 않음). 이 작업은 되돌릴 수 없습니다.',
+            'group.deleteConfirmBodyEmpty': '이 그룹에는 아직 카테고리가 없습니다. 이 작업은 되돌릴 수 없습니다.',
+            'panel.tab.standard': '표준',
+            'panel.tab.other': '기타',
+            'panel.displaySettings': '표시 설정',
+            'panel.resetToDefault': '기본값으로 재설정',
+            'panel.noteSize': '메모 글자 크기',
+            'panel.editIconAlwaysVisible': '편집 아이콘 항상 표시',
+            'panel.remarkBeforeVisibility': 'Public/Private 라벨 앞에 메모 표시',
+            'panel.enableRatingStars': '별점 평가 사용',
+            'panel.reloadAfterChange': '이 항목을 변경한 후 페이지를 새로고침하세요.',
+            'panel.reloadAfterChanges': '이 항목들을 변경한 후 페이지를 새로고침하세요.',
+            'panel.pageSupport': '지원 페이지',
+            'panel.pageStarred': 'Starred 저장소',
+            'panel.pageRepositories': '내 저장소',
+            'panel.pageOrgRepos': '조직 저장소',
+            'panel.pillStyle': '태그 스타일',
+            'panel.pillGlow': '태그 광택',
+            'panel.pillCorners': '태그 모서리',
+            'panel.pillSpacing': '태그 간격',
+            'panel.pillSize': '태그 크기',
+            'panel.releaseIconGlow': 'Release 아이콘 광택',
+            'panel.enableReleaseIconGlow': 'Release 아이콘 광택 사용',
+            'panel.releaseIconPickerHint': 'Release 아이콘 선택 → 왼쪽 패널.',
+            'panel.releaseIconThisRepo': 'Release 아이콘 (이 저장소)',
+            'panel.lockedIconAllRepos': '고정 아이콘 (모든 저장소에 표시)',
+            'panel.lockTitleLocked': '고정됨 — 모든 저장소에 고정 아이콘이 표시됩니다. 클릭하여 해제.',
+            'panel.lockTitleUnlocked': 'Release 아이콘을 모든 저장소에 고정',
+            'panel.locked': '고정됨',
+            'panel.unlocked': '고정 안 됨',
+            'panel.viewReleases': 'Releases 보기',
+            'stats.title': '통계',
+            'stats.noneYet': '아직 메모된 저장소가 없습니다.',
+            'stats.notedCount': '저장소 {n}개에 메모함',
+            'backup.title': '백업',
+            'backup.export': '내보내기',
+            'backup.import': '가져오기',
+            'backup.neverExported': '아직 내보낸 적이 없습니다 — 메모를 백업하는 것을 권장합니다.',
+            'backup.lastExported': '마지막 내보내기: {date}',
+            'backup.notValidJson': '유효한 JSON이 아닙니다.',
+            'backup.notValidBackup': '유효한 백업 파일이 아닙니다.',
+            'backup.missingData': '필요한 데이터가 없습니다 — 이 스크립트의 백업 파일이 아닌 것 같습니다.',
+            'backup.replaceConfirmTitle': '현재 모든 데이터를 교체하시겠습니까?',
+            'backup.replaceConfirmBody': '현재 저장된 모든 내용({n}개의 저장소 메모, 사용자 지정 카테고리, 표시 설정, 패널 배율)을 이 파일의 내용으로 교체하고 페이지를 새로고침합니다. 다른 백업이 없다면 이 작업은 되돌릴 수 없습니다.',
+            'reset.title': '초기화',
+            'reset.everything': '모든 설정을 기본값으로 초기화',
+            'reset.confirmTitle': '모든 설정을 기본값으로 초기화하시겠습니까?',
+            'reset.confirmBody': '모든 저장소 메모, 모든 사용자 지정 카테고리, 그리고 모든 표시 설정(Release 아이콘 고정 포함)이 스크립트를 처음 설치했을 때 상태로 초기화되고 페이지가 새로고침됩니다. 확실하지 않다면 먼저 백업을 내보내세요 — 이 작업은 되돌릴 수 없습니다.',
+            'remark.editName': '표시 이름 편집',
+            'remark.editNote': '메모 편집',
+            'remark.notePlaceholder': '메모...',
+            'remark.noteTextColor': '메모 글자 색상',
+            'remark.manageTemplates': '카테고리 템플릿 관리',
+            'remark.rateStars': '별 {n}개로 평가',
+            'language.title': '언어',
+            'language.current': '현재 언어',
+            'language.export': '템플릿 내보내기',
+            'language.import': '번역 가져오기',
+            'language.exportHint': '템플릿을 내보내 번역하거나, 번역된 파일을 가져오세요.',
+            'language.notValidJson': '유효한 JSON이 아닙니다.',
+            'language.notValidFile': '유효한 언어 파일이 아닙니다.',
+            'language.missingNameOrCode': '"langName" 또는 "langCode"가 없습니다 — 가져오기 전에 입력해 주세요.',
+            'language.importSuccess': '"{name}"을(를) 가져왔습니다 — 위에서 선택하면 전환됩니다.',
+            'language.importError': '가져오지 못했습니다 — {error}',
+            'language.deleteCustom': '이 사용자 지정 언어 삭제',
+            'language.deleteConfirmTitle': '언어 "{name}"을(를) 삭제하시겠습니까?',
+            'language.deleteConfirmBody': '가져온 번역이 제거되고 영어로 돌아갑니다. 이 작업은 되돌릴 수 없습니다(파일을 다시 가져오면 복구 가능).',
+        },
+    };
+
+    const BUILTIN_LANGUAGES = {
+        en: { name: 'English', flag: '\u{1F1FA}\u{1F1F8}' },
+        'zh-TW': { name: '繁體中文', flag: '\u{1F1F9}\u{1F1FC}' },
+        'zh-CN': { name: '简体中文', flag: '\u{1F1E8}\u{1F1F3}' },
+        ja: { name: '日本語', flag: '\u{1F1EF}\u{1F1F5}' },
+        ko: { name: '한국어', flag: '\u{1F1F0}\u{1F1F7}' },
+    };
+
+    const LANGUAGE_STORAGE_KEY = 'GRNT-language';
+
+    let _languageCache = null;
+    const LanguageStorage = {
+        get() {
+            if (_languageCache === null) {
+                const stored = GM_getValue(LANGUAGE_STORAGE_KEY, null);
+                _languageCache = (stored && typeof stored === 'object')
+                    ? { current: stored.current || 'en', custom: stored.custom || {} }
+                    : { current: 'en', custom: {} };
+            }
+            return _languageCache;
+        },
+        setCurrent(code) {
+            const state = LanguageStorage.get();
+            state.current = code;
+            GM_setValue(LANGUAGE_STORAGE_KEY, state);
+        },
+        addCustom(code, name, strings) {
+            const state = LanguageStorage.get();
+            state.custom[code] = { name, strings };
+            GM_setValue(LANGUAGE_STORAGE_KEY, state);
+        },
+        removeCustom(code) {
+            const state = LanguageStorage.get();
+            delete state.custom[code];
+            if (state.current === code) state.current = 'en';
+            GM_setValue(LANGUAGE_STORAGE_KEY, state);
+        },
+    };
+
+    function resolveActiveStrings() {
+        const { current, custom } = LanguageStorage.get();
+        if (BUILTIN_LANGUAGES[current]) {
+            return Object.assign({}, I18N_STRINGS.en, I18N_STRINGS[current] || {});
+        }
+        if (custom[current]) {
+            return Object.assign({}, I18N_STRINGS.en, custom[current].strings || {});
+        }
+        return Object.assign({}, I18N_STRINGS.en);
+    }
+
+    function t(key, vars) {
+        const strings = resolveActiveStrings();
+        let str = strings[key] !== undefined ? strings[key] : key;
+        if (vars) {
+            for (const k in vars) {
+                str = str.split('{' + k + '}').join(vars[k]);
+            }
+        }
+        return str;
+    }
 
     const REMARK_STYLES = `
         .gh-remark-badge {
@@ -940,6 +1467,36 @@
         .gh-remark-other-hint--error {
             color: #f85149;
         }
+        
+        .gh-remark-lang-select {
+            flex: 1;
+            background: var(--bgColor-default, #0d1117);
+            color: var(--fgColor-default, #f0f6fc);
+            border: 1px solid var(--borderColor-default, #3d444d);
+            border-radius: 6px;
+            padding: 4px 6px;
+            font-size: 11px;
+        }
+        .gh-remark-lang-select:hover {
+            border-color: #e3b341;
+        }
+        
+        .gh-remark-lang-delete-btn {
+            flex: none;
+            width: 22px;
+            height: 22px;
+            border: 1px solid var(--borderColor-default, #3d444d);
+            background: transparent;
+            color: #f85149;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            line-height: 1;
+        }
+        .gh-remark-lang-delete-btn:hover {
+            border-color: #f85149;
+            background-color: rgba(248,81,73,0.1);
+        }
 
         .gh-remark-rating-row {
             display: inline-flex;
@@ -1392,14 +1949,14 @@
 
             const cancelBtn = document.createElement('button');
             cancelBtn.type = 'button';
-            cancelBtn.textContent = 'Cancel';
+            cancelBtn.textContent = t('modal.cancel');
             cancelBtn.addEventListener('click', () => settle(false));
             actions.appendChild(cancelBtn);
 
             const confirmBtn = document.createElement('button');
             confirmBtn.type = 'button';
             confirmBtn.className = danger ? 'gh-remark-confirm-danger' : 'gh-remark-confirm-primary';
-            confirmBtn.textContent = confirmLabel || (danger ? 'Reset' : 'Confirm');
+            confirmBtn.textContent = confirmLabel || (danger ? t('modal.reset') : t('modal.confirm'));
             confirmBtn.addEventListener('click', () => settle(true));
             actions.appendChild(confirmBtn);
 
@@ -1716,13 +2273,13 @@
         toast.className = 'gh-remark-reload-toast';
 
         const text = document.createElement('span');
-        text.textContent = 'Saved — reload the page to apply to the current list';
+        text.textContent = t('saved.reloadHint');
         toast.appendChild(text);
 
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'gh-remark-reload-toast-btn';
-        btn.textContent = 'Reload';
+        btn.textContent = t('saved.reload');
         btn.addEventListener('click', () => location.reload());
         toast.appendChild(btn);
 
@@ -1768,14 +2325,14 @@
         try {
             data = JSON.parse(text);
         } catch (e) {
-            return { ok: false, error: 'Not valid JSON.' };
+            return { ok: false, error: t('backup.notValidJson') };
         }
         if (!data || typeof data !== 'object') {
-            return { ok: false, error: 'Not a valid backup file.' };
+            return { ok: false, error: t('backup.notValidBackup') };
         }
         if (!Array.isArray(data.remarks) || !Array.isArray(data.customCategories) ||
             !data.displaySettings || typeof data.displaySettings !== 'object') {
-            return { ok: false, error: 'Missing expected data — this doesn\u2019t look like a backup from this script.' };
+            return { ok: false, error: t('backup.missingData') };
         }
         if (!Array.isArray(data.categoryGroups)) {
             data.categoryGroups = [{ id: DEFAULT_GROUP_ID, label: 'Default', order: 0 }];
@@ -1816,6 +2373,57 @@
         GM_setValue(CATEGORY_GROUP_STORAGE_KEY, _categoryGroupCache);
         _displaySettingsCache = Object.assign({}, DISPLAY_SETTINGS_DEFAULTS);
         GM_setValue(DISPLAY_SETTINGS_STORAGE_KEY, _displaySettingsCache);
+    }
+
+    function exportLanguageTemplate() {
+        const payload = {
+            _note: [
+                '=== AI TRANSLATION INSTRUCTIONS ===',
+                'TASK: Translate ONLY the string VALUES under "strings". Do NOT rename, remove, or reorder any KEY.',
+                'Every key present in the input "strings" object MUST also be present in your output, with no omissions.',
+                'Keep ALL {placeholder} tokens UNCHANGED, exactly as spelled (e.g. {n}, {s}, {label}, {date}, {name}, {error}, {those}, {one}, {y}).',
+                'Keep ALL emoji characters UNCHANGED.',
+                'Set "langName" to this language\'s own native name (e.g. "Deutsch", "Tiếng Việt", "العربية") — this is what users will see in the language picker.',
+                'Set "langCode" to a short BCP-47-style code for this language (e.g. "de", "vi", "ar") if not already filled in.',
+                'Leave "_note" and "formatVersion" exactly as they are — do not translate or remove them.',
+                'Output the complete JSON only, in a single code block.',
+            ],
+            formatVersion: 1,
+            langCode: '',
+            langName: '',
+            strings: Object.assign({}, I18N_STRINGS.en),
+        };
+
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'github-repo-notes-and-tags-language-template.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function parseLanguageImportFile(text) {
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            return { ok: false, error: t('language.notValidJson') };
+        }
+        if (!data || typeof data !== 'object' || !data.strings || typeof data.strings !== 'object') {
+            return { ok: false, error: t('language.notValidFile') };
+        }
+        const code = (typeof data.langCode === 'string' && data.langCode.trim()) || null;
+        const name = (typeof data.langName === 'string' && data.langName.trim()) || null;
+        if (!code || !name) {
+            return { ok: false, error: t('language.missingNameOrCode') };
+        }
+        if (BUILTIN_LANGUAGES[code]) {
+            return { ok: false, error: t('language.importError', { error: code }) };
+        }
+        return { ok: true, code, name, strings: data.strings };
     }
 
     function getAllCategories() {
@@ -1882,7 +2490,7 @@
                 btnLabel.title = cat.label;
             } else {
                 btnDot.style.display = 'none';
-                btnLabel.textContent = 'Category';
+                btnLabel.textContent = t('category.none');
                 btnLabel.title = '';
             }
         };
@@ -1982,7 +2590,7 @@
                 const editBtn = document.createElement('button');
                 editBtn.type = 'button';
                 editBtn.className = 'gh-remark-cat-option-edit';
-                editBtn.title = 'Edit category';
+                editBtn.title = t('category.edit');
                 editBtn.textContent = '✏️';
                 editBtn.onclick = (e) => {
                     e.preventDefault();
@@ -1996,7 +2604,7 @@
                 const delBtn = document.createElement('button');
                 delBtn.type = 'button';
                 delBtn.className = 'gh-remark-cat-option-del';
-                delBtn.title = 'Delete category';
+                delBtn.title = t('category.delete');
                 delBtn.textContent = '✕';
                 delBtn.onclick = (e) => {
                     e.preventDefault();
@@ -2038,7 +2646,7 @@
             const addTile = document.createElement('button');
             addTile.type = 'button';
             addTile.className = 'gh-remark-cat-add-tile';
-            addTile.title = 'Add category';
+            addTile.title = t('category.add');
             addTile.textContent = '➕';
             addTile.onclick = (e) => {
                 e.preventDefault();
@@ -2054,7 +2662,7 @@
 
             const title = document.createElement('span');
             title.className = 'gh-remark-cat-inline-form-title';
-            title.textContent = 'New category';
+            title.textContent = t('category.new');
             result.appendChild(title);
 
             const formWrap = document.createElement('span');
@@ -2062,22 +2670,22 @@
 
             const nameInput = document.createElement('input');
             nameInput.type = 'text';
-            nameInput.placeholder = 'e.g. "WIP", "Archived"...';
+            nameInput.placeholder = t('category.namePlaceholder');
 
             const colorInput = document.createElement('input');
             colorInput.type = 'color';
             colorInput.value = '#e3b341';
-            colorInput.title = 'Category color';
+            colorInput.title = t('category.color');
 
             const confirmBtn = document.createElement('button');
             confirmBtn.type = 'button';
             confirmBtn.textContent = '+';
-            confirmBtn.title = 'Add category';
+            confirmBtn.title = t('category.add');
 
             const cancelBtn = document.createElement('button');
             cancelBtn.type = 'button';
             cancelBtn.textContent = '✕';
-            cancelBtn.title = 'Cancel';
+            cancelBtn.title = t('modal.cancel');
             cancelBtn.className = 'gh-remark-cat-inline-form-cancel';
 
             const submit = () => {
@@ -2118,7 +2726,7 @@
 
             const title = document.createElement('span');
             title.className = 'gh-remark-cat-inline-form-title';
-            title.textContent = 'Edit category';
+            title.textContent = t('category.edit');
             result.appendChild(title);
 
             const formWrap = document.createElement('span');
@@ -2131,17 +2739,17 @@
             const colorInput = document.createElement('input');
             colorInput.type = 'color';
             colorInput.value = category.color;
-            colorInput.title = 'Category color';
+            colorInput.title = t('category.color');
 
             const confirmBtn = document.createElement('button');
             confirmBtn.type = 'button';
             confirmBtn.textContent = '✓';
-            confirmBtn.title = 'Save changes';
+            confirmBtn.title = t('category.saveChanges');
 
             const cancelBtn = document.createElement('button');
             cancelBtn.type = 'button';
             cancelBtn.textContent = '✕';
-            cancelBtn.title = 'Cancel';
+            cancelBtn.title = t('modal.cancel');
             cancelBtn.className = 'gh-remark-cat-inline-form-cancel';
 
             const submit = () => {
@@ -2184,17 +2792,17 @@
 
             const nameInput = document.createElement('input');
             nameInput.type = 'text';
-            nameInput.placeholder = 'New group name...';
+            nameInput.placeholder = t('group.namePlaceholder');
 
             const confirmBtn = document.createElement('button');
             confirmBtn.type = 'button';
             confirmBtn.textContent = '+';
-            confirmBtn.title = 'Add group';
+            confirmBtn.title = t('group.add');
 
             const cancelBtn = document.createElement('button');
             cancelBtn.type = 'button';
             cancelBtn.textContent = '✕';
-            cancelBtn.title = 'Cancel';
+            cancelBtn.title = t('modal.cancel');
             cancelBtn.className = 'gh-remark-cat-inline-form-cancel';
 
             const submit = () => {
@@ -2257,7 +2865,7 @@
                     const delBtn = document.createElement('button');
                     delBtn.type = 'button';
                     delBtn.className = 'gh-remark-cat-tab-del';
-                    delBtn.title = 'Delete group (Shift+Click to skip confirmation)';
+                    delBtn.title = t('group.deleteTip');
                     delBtn.textContent = '✕';
                     delBtn.onclick = async (e) => {
                         e.preventDefault();
@@ -2266,12 +2874,17 @@
                             const catCount = CustomCategoryStorage.list()
                                 .filter(c => c.groupId === group.id).length;
                             const proceed = await showConfirmModal(
-                                `Delete group "${group.label}"?`,
+                                t('group.deleteConfirmTitle', { label: group.label }),
                                 catCount > 0
-                                    ? `This group has ${catCount} categor${catCount === 1 ? 'y' : 'ies'}. Deleting it removes ${catCount === 1 ? 'that category' : 'all of them'} too, and any repo already tagged with ${catCount === 1 ? 'it' : 'one of them'} will keep showing the old label as plain text (the pill just won\u2019t resolve a color/name anymore) instead of resetting to None. This can\u2019t be undone.`
-                                    : 'This group has no categories in it yet. This can\u2019t be undone.',
+                                    ? t('group.deleteConfirmBodyWithCats', {
+                                        n: catCount,
+                                        y: catCount === 1 ? 'y' : 'ies',
+                                        those: catCount === 1 ? 'that category' : 'all of them',
+                                        one: catCount === 1 ? 'it' : 'one of them',
+                                    })
+                                    : t('group.deleteConfirmBodyEmpty'),
                                 true,
-                                'Delete'
+                                t('modal.delete')
                             );
                             if (!proceed) return;
                         }
@@ -2288,7 +2901,7 @@
             addGroupTabBtn.type = 'button';
             addGroupTabBtn.className = 'gh-remark-cat-tab-btn gh-remark-cat-tab-btn--add';
             addGroupTabBtn.textContent = '+';
-            addGroupTabBtn.title = 'New group';
+            addGroupTabBtn.title = t('group.new');
             addGroupTabBtn.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -2306,11 +2919,11 @@
 
         const hintText = document.createElement('span');
         hintText.className = 'gh-remark-cat-select-hint-text';
-        hintText.textContent = 'Pick a category, or manage groups below';
+        hintText.textContent = t('category.pickOrManage');
 
         const shiftTip = document.createElement('span');
         shiftTip.className = 'gh-remark-cat-select-hint-tip';
-        shiftTip.textContent = 'Tip: Shift+Click ✕ to delete without confirming';
+        shiftTip.textContent = t('category.shiftDeleteTip');
         hintText.appendChild(shiftTip);
         introHint.appendChild(hintText);
 
@@ -2369,12 +2982,12 @@
         const tab1Btn = document.createElement('button');
         tab1Btn.type = 'button';
         tab1Btn.className = 'gh-remark-tab-btn';
-        tab1Btn.textContent = 'Standard';
+        tab1Btn.textContent = t('panel.tab.standard');
 
         const tab2Btn = document.createElement('button');
         tab2Btn.type = 'button';
         tab2Btn.className = 'gh-remark-tab-btn';
-        tab2Btn.textContent = 'Other';
+        tab2Btn.textContent = t('panel.tab.other');
 
         tabBar.appendChild(tab1Btn);
         tabBar.appendChild(tab2Btn);
@@ -2405,7 +3018,7 @@
 
         const displayTitle = document.createElement('div');
         displayTitle.className = 'gh-remark-cat-panel-title gh-remark-cat-panel-title--section';
-        displayTitle.textContent = 'Display Settings';
+        displayTitle.textContent = t('panel.displaySettings');
         tab1Content.appendChild(displayTitle);
 
         const settings = DisplaySettingsStorage.get();
@@ -2414,7 +3027,7 @@
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'gh-remark-reset-btn';
-            btn.title = 'Reset to default';
+            btn.title = t('panel.resetToDefault');
             btn.innerHTML = RESET_ICON_SVG;
             btn.addEventListener('click', () => {
                 const def = DISPLAY_SETTINGS_DEFAULTS[settingsKey];
@@ -2430,7 +3043,7 @@
         sizeRow.className = 'gh-remark-cat-panel-row';
         const sizeLabel = document.createElement('span');
         sizeLabel.className = 'gh-remark-cat-panel-row-label';
-        sizeLabel.textContent = 'Note size';
+        sizeLabel.textContent = t('panel.noteSize');
         const sizeValue = document.createElement('span');
         sizeValue.textContent = settings.fontSize + 'px';
         sizeValue.style.opacity = '0.7';
@@ -2477,40 +3090,40 @@
             return checkbox;
         };
 
-        buildCheckboxRow('Edit icon always visible', 'editIconAlwaysVisible');
+        buildCheckboxRow(t('panel.editIconAlwaysVisible'), 'editIconAlwaysVisible');
 
-        buildCheckboxRow('Remark before Public/Private label', 'remarkBeforeVisibilityLabel', null, true);
+        buildCheckboxRow(t('panel.remarkBeforeVisibility'), 'remarkBeforeVisibilityLabel', null, true);
         const remarkOrderHint = document.createElement('div');
         remarkOrderHint.className = 'gh-remark-cat-panel-empty';
         remarkOrderHint.style.fontSize = '11px';
-        remarkOrderHint.textContent = 'Reload the page after changing this.';
+        remarkOrderHint.textContent = t('panel.reloadAfterChange');
         tab1Content.appendChild(remarkOrderHint);
 
-        buildCheckboxRow('Enable rating stars', 'ratingStarsEnabled', null, true);
+        buildCheckboxRow(t('panel.enableRatingStars'), 'ratingStarsEnabled', null, true);
         const ratingHint = document.createElement('div');
         ratingHint.className = 'gh-remark-cat-panel-empty';
         ratingHint.style.fontSize = '11px';
-        ratingHint.textContent = 'Reload the page after changing this.';
+        ratingHint.textContent = t('panel.reloadAfterChange');
         tab1Content.appendChild(ratingHint);
 
         const pageSupportTitle = document.createElement('div');
         pageSupportTitle.className = 'gh-remark-cat-panel-title gh-remark-cat-panel-title--section';
-        pageSupportTitle.textContent = 'Page Support';
+        pageSupportTitle.textContent = t('panel.pageSupport');
         tab1Content.appendChild(pageSupportTitle);
 
-        buildCheckboxRow('Starred repos', 'enableStarredPage', null, true);
-        buildCheckboxRow('Your repositories', 'enableRepositoriesPage', null, true);
-        buildCheckboxRow('Organization repositories', 'enableOrgReposPage', null, true);
+        buildCheckboxRow(t('panel.pageStarred'), 'enableStarredPage', null, true);
+        buildCheckboxRow(t('panel.pageRepositories'), 'enableRepositoriesPage', null, true);
+        buildCheckboxRow(t('panel.pageOrgRepos'), 'enableOrgReposPage', null, true);
 
         const pageSupportHint = document.createElement('div');
         pageSupportHint.className = 'gh-remark-cat-panel-empty';
         pageSupportHint.style.fontSize = '11px';
-        pageSupportHint.textContent = 'Reload the page after changing these.';
+        pageSupportHint.textContent = t('panel.reloadAfterChanges');
         tab1Content.appendChild(pageSupportHint);
 
         const pillTitle = document.createElement('div');
         pillTitle.className = 'gh-remark-cat-panel-title gh-remark-cat-panel-title--section';
-        pillTitle.textContent = 'Pill Style';
+        pillTitle.textContent = t('panel.pillStyle');
         tab1Content.appendChild(pillTitle);
 
         const buildSliderRow = (labelText, settingsKey, min, max, unit) => {
@@ -2545,23 +3158,23 @@
             return slider;
         };
 
-        buildSliderRow('Pill glow', 'pillGlow', 0, 24, 'px');
-        buildSliderRow('Pill corners', 'pillRadius', 0, 24, 'px');
-        buildSliderRow('Pill spacing', 'pillGap', 0, 32, 'px');
-        buildSliderRow('Pill size', 'pillScale', 50, 250, '%');
+        buildSliderRow(t('panel.pillGlow'), 'pillGlow', 0, 24, 'px');
+        buildSliderRow(t('panel.pillCorners'), 'pillRadius', 0, 24, 'px');
+        buildSliderRow(t('panel.pillSpacing'), 'pillGap', 0, 32, 'px');
+        buildSliderRow(t('panel.pillSize'), 'pillScale', 50, 250, '%');
 
-        const iconGlowSlider = buildSliderRow('Release icon glow', 'iconGlow', 0, 20, 'px');
+        const iconGlowSlider = buildSliderRow(t('panel.releaseIconGlow'), 'iconGlow', 0, 20, 'px');
         const setIconGlowSliderEnabled = (enabled) => {
             iconGlowSlider.disabled = !enabled;
             iconGlowSlider.style.opacity = enabled ? '1' : '0.4';
         };
         setIconGlowSliderEnabled(settings.iconGlowEnabled);
-        buildCheckboxRow('Enable release icon glow', 'iconGlowEnabled', setIconGlowSliderEnabled);
+        buildCheckboxRow(t('panel.enableReleaseIconGlow'), 'iconGlowEnabled', setIconGlowSliderEnabled);
 
         if (username) {
             const sidePanelHint = document.createElement('div');
             sidePanelHint.className = 'gh-remark-cat-panel-empty';
-            sidePanelHint.textContent = 'Release icon picker → left panel.';
+            sidePanelHint.textContent = t('panel.releaseIconPickerHint');
             tab1Content.appendChild(sidePanelHint);
         }
 
@@ -2579,7 +3192,7 @@
 
             const iconTitle = document.createElement('div');
             iconTitle.className = 'gh-remark-cat-panel-title gh-remark-cat-panel-title--section';
-            iconTitle.textContent = 'Release Icon (this repo)';
+            iconTitle.textContent = t('panel.releaseIconThisRepo');
             sidePanel.appendChild(iconTitle);
 
             const lockRow = document.createElement('div');
@@ -2635,7 +3248,7 @@
 
             const lockIconTitle = document.createElement('div');
             lockIconTitle.className = 'gh-remark-cat-panel-title gh-remark-cat-panel-title--section gh-remark-icon-title-fade';
-            lockIconTitle.textContent = 'Locked icon (shown for every repo)';
+            lockIconTitle.textContent = t('panel.lockedIconAllRepos');
             sidePanel.appendChild(lockIconTitle);
 
             const lockIconGrid = document.createElement('div');
@@ -2746,9 +3359,9 @@
                 lockBtn.classList.toggle('locked', locked);
                 lockStatus.classList.toggle('locked', locked);
                 lockBtn.title = locked
-                    ? 'Locked — every repo shows the locked icon. Click to unlock.'
-                    : 'Lock the release icon for every repo';
-                lockStatus.textContent = locked ? 'Locked' : 'Unlocked';
+                    ? t('panel.lockTitleLocked')
+                    : t('panel.lockTitleUnlocked');
+                lockStatus.textContent = locked ? t('panel.locked') : t('panel.unlocked');
             };
             renderLockUi();
 
@@ -2765,7 +3378,7 @@
 
         const statsTitle = document.createElement('div');
         statsTitle.className = 'gh-remark-cat-panel-title';
-        statsTitle.textContent = 'Stats';
+        statsTitle.textContent = t('stats.title');
         tab2Content.appendChild(statsTitle);
 
         const statsSection = document.createElement('div');
@@ -2781,8 +3394,8 @@
             totalLine.style.marginTop = '0';
             totalLine.style.marginBottom = '8px';
             totalLine.textContent = total === 0
-                ? 'No repos noted yet.'
-                : `${total} repo${total === 1 ? '' : 's'} noted`;
+                ? t('stats.noneYet')
+                : t('stats.notedCount', { n: total, s: total === 1 ? '' : 's' });
             statsSection.appendChild(totalLine);
 
             if (total === 0) return;
@@ -2793,7 +3406,7 @@
 
             rows.forEach(({ key, count }) => {
                 const cat = key ? findCategory(key) : null;
-                const label = key ? (cat ? cat.label : key) : 'No category';
+                const label = key ? (cat ? cat.label : key) : t('category.noCategory');
 
                 const row = document.createElement('div');
                 row.className = 'gh-remark-stat-row';
@@ -2823,9 +3436,142 @@
         };
         renderStats();
 
+        const langTitle = document.createElement('div');
+        langTitle.className = 'gh-remark-cat-panel-title gh-remark-cat-panel-title--section';
+        langTitle.textContent = t('language.title');
+        tab2Content.appendChild(langTitle);
+
+        const langSection = document.createElement('div');
+        langSection.className = 'gh-remark-other-section';
+        tab2Content.appendChild(langSection);
+
+        const langSelectRow = document.createElement('div');
+        langSelectRow.className = 'gh-remark-cat-panel-row';
+        const langSelectLabel = document.createElement('span');
+        langSelectLabel.className = 'gh-remark-cat-panel-row-label';
+        langSelectLabel.textContent = t('language.current');
+        langSelectRow.appendChild(langSelectLabel);
+
+        const langSelect = document.createElement('select');
+        langSelect.className = 'gh-remark-lang-select';
+        langSelectRow.appendChild(langSelect);
+
+        const langDeleteBtn = document.createElement('button');
+        langDeleteBtn.type = 'button';
+        langDeleteBtn.className = 'gh-remark-lang-delete-btn';
+        langDeleteBtn.textContent = '✕';
+        langDeleteBtn.title = t('language.deleteCustom');
+        langSelectRow.appendChild(langDeleteBtn);
+
+        langSection.appendChild(langSelectRow);
+
+        const renderLangOptions = () => {
+            langSelect.innerHTML = '';
+            const { current, custom } = LanguageStorage.get();
+            Object.keys(BUILTIN_LANGUAGES).forEach((code) => {
+                const opt = document.createElement('option');
+                opt.value = code;
+                opt.textContent = `${BUILTIN_LANGUAGES[code].flag} ${BUILTIN_LANGUAGES[code].name}`;
+                langSelect.appendChild(opt);
+            });
+            Object.keys(custom).forEach((code) => {
+                const opt = document.createElement('option');
+                opt.value = code;
+                opt.textContent = `🌐 ${custom[code].name}`;
+                langSelect.appendChild(opt);
+            });
+            langSelect.value = BUILTIN_LANGUAGES[current] || custom[current] ? current : 'en';
+            langDeleteBtn.style.display = BUILTIN_LANGUAGES[current] ? 'none' : '';
+        };
+        renderLangOptions();
+
+        langSelect.addEventListener('change', () => {
+            LanguageStorage.setCurrent(langSelect.value);
+            closePanel();
+            openCategoryPanel(anchorWrapper, gearBtn, onChange, username, releaseIconEl);
+        });
+
+        langDeleteBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const { current, custom } = LanguageStorage.get();
+            if (BUILTIN_LANGUAGES[current]) return;
+            const name = (custom[current] && custom[current].name) || current;
+            const proceed = await showConfirmModal(
+                t('language.deleteConfirmTitle', { name }),
+                t('language.deleteConfirmBody'),
+                true
+            );
+            if (!proceed) return;
+            LanguageStorage.removeCustom(current);
+            closePanel();
+            openCategoryPanel(anchorWrapper, gearBtn, onChange, username, releaseIconEl);
+        });
+
+        const langBtnRow = document.createElement('div');
+        langBtnRow.className = 'gh-remark-other-btn-row';
+
+        const langExportBtn = document.createElement('button');
+        langExportBtn.type = 'button';
+        langExportBtn.textContent = t('language.export');
+        langBtnRow.appendChild(langExportBtn);
+
+        const langImportBtn = document.createElement('button');
+        langImportBtn.type = 'button';
+        langImportBtn.textContent = t('language.import');
+        langBtnRow.appendChild(langImportBtn);
+
+        const langImportFileInput = document.createElement('input');
+        langImportFileInput.type = 'file';
+        langImportFileInput.accept = 'application/json';
+        langImportFileInput.style.display = 'none';
+        langBtnRow.appendChild(langImportFileInput);
+
+        langSection.appendChild(langBtnRow);
+
+        const langHint = document.createElement('div');
+        langHint.className = 'gh-remark-other-hint';
+        langHint.textContent = t('language.exportHint');
+        langSection.appendChild(langHint);
+
+        langExportBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            exportLanguageTemplate();
+        });
+
+        langImportBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            langImportFileInput.value = '';
+            langImportFileInput.click();
+        });
+
+        langImportFileInput.addEventListener('change', () => {
+            const file = langImportFileInput.files && langImportFileInput.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                const result = parseLanguageImportFile(String(reader.result));
+                if (!result.ok) {
+                    langHint.classList.add('gh-remark-other-hint--error');
+                    langHint.textContent = result.error;
+                    return;
+                }
+                LanguageStorage.addCustom(result.code, result.name, result.strings);
+                LanguageStorage.setCurrent(result.code);
+                langHint.classList.remove('gh-remark-other-hint--error');
+                langHint.textContent = t('language.importSuccess', { name: result.name });
+                closePanel();
+                openCategoryPanel(anchorWrapper, gearBtn, onChange, username, releaseIconEl);
+            };
+            reader.readAsText(file);
+        });
+
         const ieTitle = document.createElement('div');
         ieTitle.className = 'gh-remark-cat-panel-title gh-remark-cat-panel-title--section';
-        ieTitle.textContent = 'Backup';
+        ieTitle.textContent = t('backup.title');
         tab2Content.appendChild(ieTitle);
 
         const ieSection = document.createElement('div');
@@ -2838,12 +3584,12 @@
 
         const exportBtn = document.createElement('button');
         exportBtn.type = 'button';
-        exportBtn.textContent = 'Export';
+        exportBtn.textContent = t('backup.export');
         ieBtnRow.appendChild(exportBtn);
 
         const importBtn = document.createElement('button');
         importBtn.type = 'button';
-        importBtn.textContent = 'Import';
+        importBtn.textContent = t('backup.import');
         ieBtnRow.appendChild(importBtn);
 
         const importFileInput = document.createElement('input');
@@ -2862,12 +3608,13 @@
             const lastExport = GM_getValue(LAST_EXPORT_STORAGE_KEY, null);
             ieHint.classList.remove('gh-remark-other-hint--error');
             if (!lastExport) {
-                ieHint.textContent = 'Never exported — consider backing up your notes.';
+                ieHint.textContent = t('backup.neverExported');
                 return;
             }
             const d = new Date(lastExport);
             const pad = (n) => String(n).padStart(2, '0');
-            ieHint.textContent = `Last exported: ${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            const dateStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            ieHint.textContent = t('backup.lastExported', { date: dateStr });
         };
         renderExportHint();
 
@@ -2900,8 +3647,8 @@
 
                 const remarkCount = result.data.remarks.length;
                 const proceed = await showConfirmModal(
-                    'Replace all current data?',
-                    `This will replace everything currently saved (${remarkCount} repo note${remarkCount === 1 ? '' : 's'}, custom categories, display settings, and panel scale) with the contents of this file, then reload the page. This can\u2019t be undone unless you have another backup.`,
+                    t('backup.replaceConfirmTitle'),
+                    t('backup.replaceConfirmBody', { n: remarkCount, s: remarkCount === 1 ? '' : 's' }),
                     true
                 );
                 if (!proceed) return;
@@ -2914,7 +3661,7 @@
 
         const resetTitle = document.createElement('div');
         resetTitle.className = 'gh-remark-cat-panel-title gh-remark-cat-panel-title--section';
-        resetTitle.textContent = 'Reset';
+        resetTitle.textContent = t('reset.title');
         tab2Content.appendChild(resetTitle);
 
         const resetSection = document.createElement('div');
@@ -2927,7 +3674,7 @@
         const resetBtn = document.createElement('button');
         resetBtn.type = 'button';
         resetBtn.className = 'gh-remark-other-btn-danger';
-        resetBtn.textContent = 'Reset everything to defaults';
+        resetBtn.textContent = t('reset.everything');
         resetBtnRow.appendChild(resetBtn);
         resetSection.appendChild(resetBtnRow);
 
@@ -2935,8 +3682,8 @@
             e.preventDefault();
             e.stopPropagation();
             const proceed = await showConfirmModal(
-                'Reset everything to defaults?',
-                'This clears every repo note, every custom category, and all display settings (including the release-icon lock) back to how this script looked on first install, then reloads the page. Export a backup first if you\u2019re not sure — this can\u2019t be undone.',
+                t('reset.confirmTitle'),
+                t('reset.confirmBody'),
                 true
             );
             if (!proceed) return;
@@ -3055,7 +3802,7 @@
 
             const editBtn = document.createElement('span');
             editBtn.className = 'gh-remark-profile-name-edit';
-            editBtn.title = 'Edit display name';
+            editBtn.title = t('remark.editName');
             editBtn.innerHTML = EDIT_ICON_SVG;
             editBtn.onclick = (e) => {
                 e.preventDefault();
@@ -3139,8 +3886,8 @@
     function buildReleaseIcon(href, iconKey) {
         const icon = document.createElement('a');
         icon.href = href.replace(/\/+$/, '') + '/releases';
-        icon.title = 'View releases';
-        icon.setAttribute('aria-label', 'View releases for ' + href.slice(1));
+        icon.title = t('panel.viewReleases');
+        icon.setAttribute('aria-label', t('panel.viewReleases') + ' ' + href.slice(1));
         icon.className = 'gh-remark-release-icon';
         icon.style.cssText =
             'display:inline-flex;align-items:center;justify-content:center;' +
@@ -3184,7 +3931,7 @@
                 const isFilled = starValue <= currentRating;
                 btn.classList.toggle('filled', isFilled);
                 btn.innerHTML = isFilled ? RATING_STAR_FILLED_SVG : RATING_STAR_OUTLINE_SVG;
-                btn.title = `Rate ${starValue} star${starValue === 1 ? '' : 's'}`;
+                btn.title = t('remark.rateStars', { n: starValue, s: starValue === 1 ? '' : 's' });
             });
         };
 
@@ -3256,7 +4003,7 @@
 
             const editSpan = document.createElement('span');
             editSpan.className = 'gh-remark-badge-edit';
-            editSpan.title = 'Edit note';
+            editSpan.title = t('remark.editNote');
             editSpan.innerHTML = EDIT_ICON_SVG;
 
             const triggerEdit = (e) => {
@@ -3281,7 +4028,7 @@
             const gearBtn = document.createElement('button');
             gearBtn.type = 'button';
             gearBtn.className = 'gh-remark-gear-btn';
-            gearBtn.title = 'Manage category templates';
+            gearBtn.title = t('remark.manageTemplates');
             gearBtn.textContent = GEAR_BUTTON_TEXT;
 
             const openPanel = () => {
@@ -3309,7 +4056,7 @@
             remarkInput.type = 'text';
             remarkInput.value = currentRemark;
             remarkInput.className = 'gh-remark-badge-input';
-            remarkInput.placeholder = 'Note...';
+            remarkInput.placeholder = t('remark.notePlaceholder');
             remarkInput.style.width = '120px';
             wrapper.appendChild(remarkInput);
             remarkInput.focus();
@@ -3321,13 +4068,13 @@
             colorSwatch.type = 'color';
             colorSwatch.className = 'gh-remark-badge-color-swatch';
             colorSwatch.value = currentTextColor;
-            colorSwatch.title = 'Note text color';
+            colorSwatch.title = t('remark.noteTextColor');
             colorWrap.appendChild(colorSwatch);
 
             const colorResetBtn = document.createElement('button');
             colorResetBtn.type = 'button';
             colorResetBtn.className = 'gh-remark-reset-btn';
-            colorResetBtn.title = 'Reset to default';
+            colorResetBtn.title = t('panel.resetToDefault');
             colorResetBtn.innerHTML = RESET_ICON_SVG;
             colorResetBtn.addEventListener('click', () => {
                 colorSwatch.value = DEFAULT_REMARK_TEXT_COLOR;
