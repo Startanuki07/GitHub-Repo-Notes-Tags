@@ -4,7 +4,7 @@
 // @homepageURL  https://github.com/Startanuki07
 // @license      MIT
 // @author       Star_tanuki07
-// @version      1.2.0.0
+// @version      1.2.1.0
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=github.com
 // @description  Add personal notes, tags, and ratings to repos on your GitHub lists.
 // @description:zh-TW 為 GitHub 清單中的 repo 加上個人備註、分類標籤與星等評分。
@@ -49,7 +49,9 @@
             'group.new': 'New group',
             'group.deleteTip': 'Delete group (Shift+Click to skip confirmation)',
             'group.deleteConfirmTitle': 'Delete group "{label}"?',
-            'group.deleteConfirmBodyWithCats': 'This group has {n} categor{y}. Deleting it removes {those} too, and any repo already tagged with {one} will keep showing the old label as plain text (the pill just won\u2019t resolve a color/name anymore) instead of resetting to None. This can\u2019t be undone.',
+            'category.deleteConfirmTitle': 'Delete category "{label}"?',
+            'category.deleteConfirmBody': 'Every repo currently tagged with this category will be reset to None. This can\u2019t be undone.',
+            'group.deleteConfirmBodyWithCats': 'This group has {n} categor{y}. Deleting it also removes its categories, and every repo tagged with any of them is reset to None. This can\u2019t be undone.',
             'group.deleteConfirmBodyEmpty': 'This group has no categories in it yet. This can\u2019t be undone.',
             'panel.tab.standard': 'Standard',
             'panel.tab.other': 'Other',
@@ -140,7 +142,9 @@
             'group.new': '新群組',
             'group.deleteTip': '刪除群組（Shift+點擊可跳過確認）',
             'group.deleteConfirmTitle': '刪除群組「{label}」？',
-            'group.deleteConfirmBodyWithCats': '此群組內有 {n} 個分類。刪除後會一併移除{those}，任何已標記{one}的 repo 將只顯示純文字舊標籤（無法再對應顏色／名稱），而不會重設為「無」。此動作無法復原。',
+            'category.deleteConfirmTitle': '刪除分類「{label}」？',
+            'category.deleteConfirmBody': '所有已標記此分類的 repo 都會被重設為「無」。此動作無法復原。',
+            'group.deleteConfirmBodyWithCats': '此群組內有 {n} 個分類。刪除後會一併移除這些分類，所有已標記其中任一分類的 repo 都會被重設為「無」。此動作無法復原。',
             'group.deleteConfirmBodyEmpty': '此群組內尚無任何分類。此動作無法復原。',
             'panel.tab.standard': '標準',
             'panel.tab.other': '其他',
@@ -231,7 +235,9 @@
             'group.new': '新分组',
             'group.deleteTip': '删除分组（Shift+点击可跳过确认）',
             'group.deleteConfirmTitle': '删除分组"{label}"？',
-            'group.deleteConfirmBodyWithCats': '此分组内有 {n} 个分类。删除后会一并移除{those}，任何已标记{one}的仓库将只显示纯文本旧标签（无法再对应颜色/名称），而不会重置为"无"。此操作无法撤销。',
+            'category.deleteConfirmTitle': '删除分类"{label}"？',
+            'category.deleteConfirmBody': '所有已标记此分类的仓库都会被重置为"无"。此操作无法撤销。',
+            'group.deleteConfirmBodyWithCats': '此分组内有 {n} 个分类。删除后会一并移除这些分类，所有已标记其中任一分类的仓库都会被重置为"无"。此操作无法撤销。',
             'group.deleteConfirmBodyEmpty': '此分组内尚无任何分类。此操作无法撤销。',
             'panel.tab.standard': '标准',
             'panel.tab.other': '其他',
@@ -322,7 +328,9 @@
             'group.new': '新しいグループ',
             'group.deleteTip': 'グループを削除（Shift+クリックで確認をスキップ）',
             'group.deleteConfirmTitle': 'グループ「{label}」を削除しますか？',
-            'group.deleteConfirmBodyWithCats': 'このグループには {n} 件のカテゴリがあります。削除すると{those}も削除され、{one}が設定されていたリポジトリはピルが色/名前を解決できなくなり、プレーンテキストの古いラベルとして表示されます（「なし」にはリセットされません）。この操作は元に戻せません。',
+            'category.deleteConfirmTitle': 'カテゴリ「{label}」を削除しますか？',
+            'category.deleteConfirmBody': 'このカテゴリが設定されているすべてのリポジトリは「なし」にリセットされます。この操作は元に戻せません。',
+            'group.deleteConfirmBodyWithCats': 'このグループには {n} 件のカテゴリがあります。削除するとこれらのカテゴリも削除され、いずれかが設定されているすべてのリポジトリは「なし」にリセットされます。この操作は元に戻せません。',
             'group.deleteConfirmBodyEmpty': 'このグループにはまだカテゴリがありません。この操作は元に戻せません。',
             'panel.tab.standard': '標準',
             'panel.tab.other': 'その他',
@@ -413,7 +421,9 @@
             'group.new': '새 그룹',
             'group.deleteTip': '그룹 삭제 (Shift+클릭으로 확인 건너뛰기)',
             'group.deleteConfirmTitle': '그룹 "{label}"을(를) 삭제하시겠습니까?',
-            'group.deleteConfirmBodyWithCats': '이 그룹에는 {n}개의 카테고리가 있습니다. 삭제하면 {those}도 함께 제거되며, {one}로 태그된 저장소는 색상/이름을 더 이상 표시하지 못하고 일반 텍스트 라벨로만 표시됩니다(없음으로 재설정되지 않음). 이 작업은 되돌릴 수 없습니다.',
+            'category.deleteConfirmTitle': '카테고리 "{label}"을(를) 삭제하시겠습니까?',
+            'category.deleteConfirmBody': '이 카테고리로 태그된 모든 저장소가 없음으로 재설정됩니다. 이 작업은 되돌릴 수 없습니다.',
+            'group.deleteConfirmBodyWithCats': '이 그룹에는 {n}개의 카테고리가 있습니다. 삭제하면 해당 카테고리도 함께 제거되며, 그중 하나로 태그된 모든 저장소는 없음으로 재설정됩니다. 이 작업은 되돌릴 수 없습니다.',
             'group.deleteConfirmBodyEmpty': '이 그룹에는 아직 카테고리가 없습니다. 이 작업은 되돌릴 수 없습니다.',
             'panel.tab.standard': '표준',
             'panel.tab.other': '기타',
@@ -493,6 +503,16 @@
 
     const LANGUAGE_STORAGE_KEY = 'GRNT-language';
 
+    function refreshBeforeWrite(storage, resetCache, mutatorNames) {
+        mutatorNames.forEach(name => {
+            const original = storage[name];
+            storage[name] = function () {
+                resetCache();
+                return original.apply(this, arguments);
+            };
+        });
+    }
+
     let _languageCache = null;
     const LanguageStorage = {
         get() {
@@ -521,6 +541,8 @@
             GM_setValue(LANGUAGE_STORAGE_KEY, state);
         },
     };
+    refreshBeforeWrite(LanguageStorage, () => { _languageCache = null; },
+        ['setCurrent', 'addCustom', 'removeCustom']);
 
     function resolveActiveStrings() {
         const { current, custom } = LanguageStorage.get();
@@ -528,7 +550,12 @@
             return Object.assign({}, I18N_STRINGS.en, I18N_STRINGS[current] || {});
         }
         if (custom[current]) {
-            return Object.assign({}, I18N_STRINGS.en, custom[current].strings || {});
+            const raw = custom[current].strings || {};
+            const clean = {};
+            for (const k in raw) {
+                if (typeof raw[k] === 'string') clean[k] = raw[k];
+            }
+            return Object.assign({}, I18N_STRINGS.en, clean);
         }
         return Object.assign({}, I18N_STRINGS.en);
     }
@@ -629,8 +656,9 @@
             width: auto;
             overflow: visible;
         }
-        
+
         .gh-remark-release-icon {
+            opacity: .5;
             transition: opacity .2s ease;
         }
         .gh-remark-heading:hover .gh-remark-release-icon {
@@ -2068,6 +2096,8 @@
             if (changed) RemarkStorage.save();
         }
     };
+    refreshBeforeWrite(RemarkStorage, () => { _remarkCache = null; },
+        ['update', 'updateIcon', 'updateRating', 'clearCategoryKey']);
 
     const BUILTIN_CATEGORIES = [
         { key: 'computer', label: 'Computer', color: '#e3b341' },
@@ -2127,6 +2157,8 @@
             CustomCategoryStorage._removeByGroup(groupId);
         }
     };
+    refreshBeforeWrite(GroupStorage, () => { _categoryGroupCache = null; },
+        ['add', 'remove']);
 
     const CUSTOM_CATEGORY_STORAGE_KEY = 'GRNT-customCategories-v2';
     let _customCategoryCache = null;
@@ -2177,6 +2209,8 @@
             removedKeys.forEach(key => RemarkStorage.clearCategoryKey(key));
         }
     };
+    refreshBeforeWrite(CustomCategoryStorage, () => { _customCategoryCache = null; },
+        ['add', 'update', 'remove', '_removeByGroup']);
 
     const PANEL_SCALE_STORAGE_KEY = 'GRNT-panelScale';
 
@@ -2251,6 +2285,11 @@
             GM_setValue(DISPLAY_SETTINGS_STORAGE_KEY, _displaySettingsCache);
         }
     };
+    refreshBeforeWrite(DisplaySettingsStorage, () => {
+        if (_displaySettingsCache !== null) {
+            Object.assign(_displaySettingsCache, GM_getValue(DISPLAY_SETTINGS_STORAGE_KEY, {}));
+        }
+    }, ['update']);
 
     function applyDisplaySettings() {
         const s = DisplaySettingsStorage.get();
@@ -2259,9 +2298,8 @@
         document.documentElement.style.setProperty('--gh-remark-pill-radius', s.pillRadius + 'px');
         document.documentElement.style.setProperty('--gh-remark-pill-gap', s.pillGap + 'px');
         document.documentElement.style.setProperty('--gh-remark-pill-scale', s.pillScale / 100);
-        document.documentElement.style.setProperty(
-            '--gh-remark-icon-glow', (s.iconGlowEnabled ? s.iconGlow : 0) + 'px'
-        );
+        document.documentElement.style.setProperty('--gh-remark-icon-glow', s.iconGlow);
+        document.documentElement.style.setProperty('--gh-remark-icon-glow-on', s.iconGlowEnabled ? 1 : 0);
         document.documentElement.classList.toggle('gh-remark-edit-hover-only', !s.editIconAlwaysVisible);
     }
 
@@ -2300,7 +2338,9 @@
             customCategories: CustomCategoryStorage.list(),
             categoryGroups: GroupStorage.list(),
             displaySettings: DisplaySettingsStorage.get(),
-            panelScale: getPanelScaleLevel()
+            panelScale: getPanelScaleLevel(),
+            userDisplayNames: GM_getValue(USER_DISPLAY_NAME_STORAGE_KEY, {}),
+            language: LanguageStorage.get()
         };
 
         const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -2320,6 +2360,77 @@
         return payload.exportedAt;
     }
 
+    function isPlainObject(v) {
+        return v !== null && typeof v === 'object' && !Array.isArray(v);
+    }
+    function isNonEmptyString(v) {
+        return typeof v === 'string' && v.trim() !== '';
+    }
+    function isOptionalString(v) {
+        return v === undefined || v === null || typeof v === 'string';
+    }
+    function hasOwn(obj, key) {
+        return Object.prototype.hasOwnProperty.call(obj, key);
+    }
+    function isValidRemarkEntry(e) {
+        return isPlainObject(e) && isNonEmptyString(e.username) &&
+            isOptionalString(e.remark) && isOptionalString(e.groupName) &&
+            isOptionalString(e.textColor) && isOptionalString(e.iconKey) &&
+            (e.rating === undefined || e.rating === null ||
+                (typeof e.rating === 'number' && Number.isFinite(e.rating)));
+    }
+    function isValidCategoryEntry(c) {
+        return isPlainObject(c) && isNonEmptyString(c.key) &&
+            typeof c.label === 'string' && typeof c.color === 'string' &&
+            isOptionalString(c.groupId);
+    }
+    function isValidGroupEntry(g) {
+        return isPlainObject(g) && isNonEmptyString(g.id) && typeof g.label === 'string';
+    }
+    function sanitizeDisplaySettings(obj) {
+        const out = {};
+        Object.keys(DISPLAY_SETTINGS_DEFAULTS).forEach(k => {
+            if (!hasOwn(obj, k)) return;
+            const v = obj[k];
+            if (typeof v !== typeof DISPLAY_SETTINGS_DEFAULTS[k]) return;
+            if (typeof v === 'number' && !Number.isFinite(v)) return;
+            out[k] = v;
+        });
+        return out;
+    }
+    function sanitizeStringMap(obj) {
+        const out = {};
+        if (!isPlainObject(obj)) return out;
+        Object.keys(obj).forEach(k => {
+            if (k !== '__proto__' && typeof obj[k] === 'string') out[k] = obj[k];
+        });
+        return out;
+    }
+    function sanitizeUserDisplayNames(obj) {
+        const out = {};
+        if (!isPlainObject(obj)) return out;
+        Object.keys(obj).forEach(k => {
+            if (k !== '__proto__' && typeof obj[k] === 'string' && obj[k].trim()) out[k] = obj[k].trim();
+        });
+        return out;
+    }
+    function sanitizeLanguageState(lang) {
+        if (!isPlainObject(lang)) return null;
+        const custom = {};
+        if (isPlainObject(lang.custom)) {
+            Object.keys(lang.custom).forEach(code => {
+                const entry = lang.custom[code];
+                if (code === '__proto__' || hasOwn(BUILTIN_LANGUAGES, code)) return;
+                if (!isPlainObject(entry) || !isNonEmptyString(entry.name)) return;
+                const strings = sanitizeStringMap(entry.strings);
+                if (Object.keys(strings).length) custom[code] = { name: entry.name.trim(), strings };
+            });
+        }
+        const ok = typeof lang.current === 'string' &&
+            (hasOwn(BUILTIN_LANGUAGES, lang.current) || hasOwn(custom, lang.current));
+        return { current: ok ? lang.current : 'en', custom };
+    }
+
     function parseImportFile(text) {
         let data;
         try {
@@ -2334,12 +2445,27 @@
             !data.displaySettings || typeof data.displaySettings !== 'object') {
             return { ok: false, error: t('backup.missingData') };
         }
+        if (typeof data.formatVersion === 'number' && data.formatVersion > EXPORT_FORMAT_VERSION) {
+            return { ok: false, error: t('backup.notValidBackup') };
+        }
+        if (!data.remarks.every(isValidRemarkEntry) ||
+            !data.customCategories.every(isValidCategoryEntry) ||
+            (Array.isArray(data.categoryGroups) && !data.categoryGroups.every(isValidGroupEntry))) {
+            return { ok: false, error: t('backup.notValidBackup') };
+        }
         if (!Array.isArray(data.categoryGroups)) {
             data.categoryGroups = [{ id: DEFAULT_GROUP_ID, label: 'Default', order: 0 }];
+        }
+        if (!data.categoryGroups.some(g => g.id === DEFAULT_GROUP_ID)) {
+            data.categoryGroups.unshift({ id: DEFAULT_GROUP_ID, label: 'Default', order: 0 });
         }
         if (!PANEL_SCALE_LEVELS.hasOwnProperty(data.panelScale)) {
             data.panelScale = DEFAULT_PANEL_SCALE;
         }
+        data.displaySettings = sanitizeDisplaySettings(data.displaySettings);
+        data.userDisplayNames = isPlainObject(data.userDisplayNames)
+            ? sanitizeUserDisplayNames(data.userDisplayNames) : undefined;
+        data.language = sanitizeLanguageState(data.language) || undefined;
         return { ok: true, data };
     }
 
@@ -2352,6 +2478,13 @@
         GM_setValue(CATEGORY_GROUP_STORAGE_KEY, _categoryGroupCache);
         DisplaySettingsStorage.update(data.displaySettings);
         setPanelScaleLevel(data.panelScale);
+        if (data.userDisplayNames) {
+            GM_setValue(USER_DISPLAY_NAME_STORAGE_KEY, data.userDisplayNames);
+        }
+        if (data.language) {
+            _languageCache = data.language;
+            GM_setValue(LANGUAGE_STORAGE_KEY, _languageCache);
+        }
     }
 
     function computeRemarkStats() {
@@ -2381,7 +2514,7 @@
                 '=== AI TRANSLATION INSTRUCTIONS ===',
                 'TASK: Translate ONLY the string VALUES under "strings". Do NOT rename, remove, or reorder any KEY.',
                 'Every key present in the input "strings" object MUST also be present in your output, with no omissions.',
-                'Keep ALL {placeholder} tokens UNCHANGED, exactly as spelled (e.g. {n}, {s}, {label}, {date}, {name}, {error}, {those}, {one}, {y}).',
+                'Keep ALL {placeholder} tokens UNCHANGED, exactly as spelled (e.g. {n}, {s}, {label}, {date}, {name}, {error}, {y}).',
                 'Keep ALL emoji characters UNCHANGED.',
                 'Set "langName" to this language\'s own native name (e.g. "Deutsch", "Tiếng Việt", "العربية") — this is what users will see in the language picker.',
                 'Set "langCode" to a short BCP-47-style code for this language (e.g. "de", "vi", "ar") if not already filled in.',
@@ -2412,7 +2545,11 @@
         } catch (e) {
             return { ok: false, error: t('language.notValidJson') };
         }
-        if (!data || typeof data !== 'object' || !data.strings || typeof data.strings !== 'object') {
+        if (!data || typeof data !== 'object' || !isPlainObject(data.strings)) {
+            return { ok: false, error: t('language.notValidFile') };
+        }
+        const cleanStrings = sanitizeStringMap(data.strings);
+        if (Object.keys(cleanStrings).length === 0) {
             return { ok: false, error: t('language.notValidFile') };
         }
         const code = (typeof data.langCode === 'string' && data.langCode.trim()) || null;
@@ -2423,7 +2560,7 @@
         if (BUILTIN_LANGUAGES[code]) {
             return { ok: false, error: t('language.importError', { error: code }) };
         }
-        return { ok: true, code, name, strings: data.strings };
+        return { ok: true, code, name, strings: cleanStrings };
     }
 
     function getAllCategories() {
@@ -2606,9 +2743,18 @@
                 delBtn.className = 'gh-remark-cat-option-del';
                 delBtn.title = t('category.delete');
                 delBtn.textContent = '✕';
-                delBtn.onclick = (e) => {
+                delBtn.onclick = async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    if (!e.shiftKey) {
+                        const proceed = await showConfirmModal(
+                            t('category.deleteConfirmTitle', { label: cat.label }),
+                            t('category.deleteConfirmBody'),
+                            true,
+                            t('modal.delete')
+                        );
+                        if (!proceed) return;
+                    }
                     CustomCategoryStorage.remove(cat.key);
                     handleDataChange(cat.key);
                 };
@@ -2879,8 +3025,6 @@
                                     ? t('group.deleteConfirmBodyWithCats', {
                                         n: catCount,
                                         y: catCount === 1 ? 'y' : 'ies',
-                                        those: catCount === 1 ? 'that category' : 'all of them',
-                                        one: catCount === 1 ? 'it' : 'one of them',
                                     })
                                     : t('group.deleteConfirmBodyEmpty'),
                                 true,
@@ -3163,7 +3307,7 @@
         buildSliderRow(t('panel.pillSpacing'), 'pillGap', 0, 32, 'px');
         buildSliderRow(t('panel.pillSize'), 'pillScale', 50, 250, '%');
 
-        const iconGlowSlider = buildSliderRow(t('panel.releaseIconGlow'), 'iconGlow', 0, 20, 'px');
+        const iconGlowSlider = buildSliderRow(t('panel.releaseIconGlow'), 'iconGlow', 0, 20, '');
         const setIconGlowSliderEnabled = (enabled) => {
             iconGlowSlider.disabled = !enabled;
             iconGlowSlider.style.opacity = enabled ? '1' : '0.4';
@@ -3892,13 +4036,13 @@
         icon.style.cssText =
             'display:inline-flex;align-items:center;justify-content:center;' +
             'width:26px;height:26px;margin-right:8px;vertical-align:middle;' +
-            'line-height:0;opacity:.5;' +
+            'line-height:0;' +
             'border-radius:50%;' +
             'background:radial-gradient(circle,' +
-            'color-mix(in srgb,currentColor calc(35% + var(--gh-remark-icon-glow,4px) * 3%),transparent) 0%,' +
-            'color-mix(in srgb,currentColor calc(12% + var(--gh-remark-icon-glow,4px) * 2%),transparent) ' +
-            'calc(40% + var(--gh-remark-icon-glow,4px) * 1.5%),' +
-            'transparent calc(55% + var(--gh-remark-icon-glow,4px) * 3%));';
+            'color-mix(in srgb,currentColor calc((6% + var(--gh-remark-icon-glow,4) * 1.5%) * var(--gh-remark-icon-glow-on,1)),transparent) 0%,' +
+            'color-mix(in srgb,currentColor calc((14% + var(--gh-remark-icon-glow,4) * 2%) * var(--gh-remark-icon-glow-on,1)),transparent) ' +
+            'calc(38% + var(--gh-remark-icon-glow,4) * 0.8%),' +
+            'transparent calc(56% + var(--gh-remark-icon-glow,4) * 1.2%));';
         icon.setIcon = (key) => {
             const ic = resolveReleaseIcon(key);
             icon.innerHTML = ic.svg;
